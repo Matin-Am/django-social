@@ -1,0 +1,66 @@
+{% extends 'base.html' %}  
+
+
+
+{% block content %}
+    {% if request.user.id == post.user.id %}
+    <a href="{% url 'home:delete' post.id %}" class="btn btn-danger">Delete</a>
+    <a href="{% url 'home:update' post.id %}" class="btn btn-info">Update</a><br>
+    {% endif %}
+
+
+    <a href="{% url 'home:profile' post.user.id %}">{{ post.user.username }}</a>
+    <p>{{post.created|date:'Y M d'}}</p>
+    <h5>{{post.body}}</h5><hr>
+
+
+    {% if request.user.is_authenticated %}
+        <form action="" method="post" class="col-md-6">
+            {% csrf_token %}
+            {{form.as_p}}
+            <input type="submit" value="Send">
+        </form><br>
+    {% else %}
+        <p class="alert alert-danger">Only logged in users can comment . </p>
+    {% endif %}
+   
+
+
+
+    {% for comment in comments %}
+        <div class="card bg-dark text-white">
+            <p class="card-header">{{comment.user}}  |  {{comment.created|timesince}} ago</p>
+            <p class="card-body">{{comment.body}}</p>
+            {% if request.user.is_authenticated %}  
+                <form action="{% url 'home:add_reply' post.id comment.id %}" method="post" class="col-md-6">
+                    {% csrf_token %}
+                    {{reply_form.as_p}}
+                    <input type="submit"value="Send">
+                </form><br>
+            {% endif %}
+
+
+
+                {% with replies=comment.rcomments.all %}
+                {% for reply in replies %}
+                    <div class="card bg-primary text-white">
+                        <p class="card-header">{{ reply.user }} | {{ reply.created|timesince }}</p>
+                        <p class="card-body">{{ reply.body }}</p>
+                    </div><br>
+                {% endfor %}
+            {% endwith %}
+        </div><br>
+        
+
+
+
+
+    {% empty %}
+        <p class="alert alert-warning">No comments here </p>
+    {% endfor %}
+
+
+
+
+
+{% endblock  %}
